@@ -7,7 +7,7 @@ The Software Plagiarism Detection Tool (SPDT) is designed to aid in the detectio
 #
 ## Features
 - Accurate Plagiarism Detection :
-Software Plagiarism Detection Tool leverages the concept of abstract syntax trees (ASTs) to assess the structural resemblance between code samples. It employs the Zhang-Shasha algorithm to compute the minimum number of edit operations required to transform one AST into another.This value is then utilized to calculate the percentage similarity between the input code snippets.
+Software Plagiarism Detection Tool leverages the concept of abstract syntax trees (ASTs) to assess the structural resemblance between code samples. It employs the Zhang-Shasha algorithm to compute the minimum number of edit operations required to transform one AST into another. This value is then utilized to calculate the percentage similarity between the input code snippets.
 
 - User-Friendly Input :
 Users can input either the names of individual files or directories containing multiple files for analysis. The tool processes these inputs and generates comprehensive reports.
@@ -101,7 +101,7 @@ While the tool comprehensively addresses numerous plagiarism scenarios, it is im
 
 ## Prudent Strategies and Reflective Considerations
 
-This Software Plagiarism Detection Tool presents a potent solution for automating the detection of code plagiarism. However, to ensure utmost accuracy, it is recommended to combine the tool's outcomes with manual scrutiny. The judicious interplay of automated analysis and human insight forms a robust defense against potential plagiarism cases.
+This Software Plagiarism Detection Tool presents a potent solution for automating code plagiarism detection. However, to ensure utmost accuracy, combining the tool's outcomes with manual scrutiny is recommended. Combining computer analysis and human insight helps us effectively prevent plagiarism.
 
 
 
