@@ -403,7 +403,7 @@ def main():
 
                     for func1, func2, func_similarity in func_similarity_list:
                         func_table.add_row([func1, func2, func_similarity])
-
+                    print("\n* Function based percentage similarity")
                     print(func_table)
 
                 end_time = time.time()
