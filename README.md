@@ -52,6 +52,13 @@ Clone the project into the same directory that has your files and directories th
   git clone https://github.com/Ruchika-2003/Software_Plagiarism_Detection_Tool.git
 ```
 
+Run this command to use the code present in Software_Plagiarism_Detection_Tool into the parent directory containing the files and directories on which tool is to be tested
+
+```bash
+  cp Software_Plagiarism_Detection_Tool/dt.py .
+```
+
+
 Enter the below as a command
 
 ```bash
