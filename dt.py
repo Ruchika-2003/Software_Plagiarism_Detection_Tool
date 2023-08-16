@@ -238,167 +238,181 @@ def preprocess_cpp_code(input_code):
 def main():
     alias_command = "alias spdt='python3'"
     subprocess.run(alias_command, shell=True)
-    file_names = []
-    import sys
 
-    if len(sys.argv) > 1:
-        input_names = sys.argv[1:]
+    try :
+        file_names = []
+        import sys
 
-        all_directories = all(os.path.isdir(os.path.abspath(name)) for name in input_names)
+        if len(sys.argv) > 1:
+            input_names = sys.argv[1:]
 
-        all_files = all(not os.path.isdir(os.path.abspath(name)) for name in input_names)
+            all_directories = all(os.path.isdir(os.path.abspath(name)) for name in input_names)
 
-        if all_files:
-            # Preprocessing codes if input is all file names for computation and saving preprocessed code in file_name_p.cpp form
-            for file_name in input_names:
+            all_files = all(not os.path.isdir(os.path.abspath(name)) for name in input_names)
+
+            if all_files:
+                # Preprocessing codes if input is all file names for computation and saving preprocessed code in file_name_p.cpp form
+                for file_name in input_names:
+                    abs_file_path = os.path.abspath(file_name)
+                    if os.path.exists(abs_file_path):
+                        preprocessed_code = preprocess_cpp_code(open(abs_file_path, 'r').read())
+                        preprocessed_file_path = abs_file_path.replace(".cpp", "_p.cpp")
+                        with open(preprocessed_file_path, 'w') as file:
+                            file.write(preprocessed_code)
+                        file_names.append(preprocessed_file_path)
+                    else:
+                        print(f"Error: {file_name} is not present.")
+                        files_present = False
+                        return
+
+            if all_directories:
+                for name in input_names:
+                    # Creating fin_ent.cpp if not present
+                    new_file_path = combine_cpp_files(name)
+                    if new_file_path:
+                        print(f"Processing directory: {name}")
+                        file_names.append(new_file_path)
+            else:
+                file_names = input_names
+
+            validated_file_paths = []
+            for file_name in file_names:
                 abs_file_path = os.path.abspath(file_name)
                 if os.path.exists(abs_file_path):
-                    preprocessed_code = preprocess_cpp_code(open(abs_file_path, 'r').read())
-                    preprocessed_file_path = abs_file_path.replace(".cpp", "_p.cpp")
-                    with open(preprocessed_file_path, 'w') as file:
-                        file.write(preprocessed_code)
-                    file_names.append(preprocessed_file_path)
+                    validated_file_paths.append(abs_file_path)
                 else:
                     print(f"Error: {file_name} is not present.")
                     files_present = False
+                    return
 
-        if all_directories:
-            for name in input_names:
-                # Creating fin_ent.cpp if not present
-                new_file_path = combine_cpp_files(name)
-                if new_file_path:
-                    print(f"Processing directory: {name}")
-                    file_names.append(new_file_path)
-        else:
-            file_names = input_names
+            print("Checking files . . . .")
+            files_present = True
+            # For storing the number of nodes for each file
+            file_node_counts = {}
 
-        validated_file_paths = []
-        for file_name in file_names:
-            abs_file_path = os.path.abspath(file_name)
-            if os.path.exists(abs_file_path):
-                validated_file_paths.append(abs_file_path)
-            else:
-                print(f"Error: {file_name} is not present.")
-                files_present = False
+            for file_path in validated_file_paths:
+                file_name = os.path.basename(file_path)
+                if (all_directories == False):
+                    print(f"Processing {file_name} ...")
 
-        print("Checking files . . . .")
-        files_present = True
-        # For storing the number of nodes for each file
-        file_node_counts = {}
+                # Generating the AST and creating the tree
+                ast = generate_ast(open(file_path, 'r').read())
+                num_nodes = calculate_tree_size(create_tree(ast))
+                file_node_counts[file_name] = num_nodes
 
-        for file_path in validated_file_paths:
-            file_name = os.path.basename(file_path)
-            if (all_directories==False):
-                print(f"Processing {file_name} ...")
+            if files_present:
+                total_nodes = 0
+                for file_name, num_nodes in file_node_counts.items():
+                    total_nodes += num_nodes
 
-            # Generating the AST and creating the tree
-            ast = generate_ast(open(file_path, 'r').read())
-            num_nodes = calculate_tree_size(create_tree(ast))
-            file_node_counts[file_name] = num_nodes
+                # Algorithm to decide threshold
+                average_nodes = total_nodes // len(file_node_counts)
+                nearest_factor_of_10 = (average_nodes // 10) * 10
 
-        if files_present:
-            total_nodes = 0
-            for file_name, num_nodes in file_node_counts.items():
-                total_nodes += num_nodes
+                for pair in itertools.combinations(file_node_counts.keys(), 2):
+                    file_name1, file_name2 = pair
+                    nodes_diff = abs(file_node_counts[file_name1] - file_node_counts[file_name2])
 
-            # Algorithm to decide threshold
-            average_nodes = total_nodes // len(file_node_counts)
-            nearest_factor_of_10 = (average_nodes // 10) * 10
+                print("\nWaiting for response . . . .")
+                start_time = time.time()
 
-            for pair in itertools.combinations(file_node_counts.keys(), 2):
-                file_name1, file_name2 = pair
-                nodes_diff = abs(file_node_counts[file_name1] - file_node_counts[file_name2])
+                file_pairs = list(itertools.combinations(file_names, 2))
+                similarities = []
+                similar_pairs = []
+                excluded_pairs = []
 
-            print("\nWaiting for response . . . .")
-            start_time = time.time()
+                for pair in file_pairs:
+                    file_name1, file_name2 = pair
+                    nodes_diff = abs(
+                        file_node_counts[os.path.basename(file_name1)] - file_node_counts[os.path.basename(file_name2)])
 
-            file_pairs = list(itertools.combinations(file_names, 2))
-            similarities = []
-            similar_pairs = []
-            excluded_pairs = []
+                    if nodes_diff > nearest_factor_of_10:
+                        excluded_pairs.append(pair)
+                    else:
+                        similarity, functions1, functions2 = calculate_similarity(file_name1, file_name2)
+                        similarities.append((pair, similarity))
+                        if functions1 and functions2 and 0.3 <= similarity < 0.8:
+                            similar_pairs.append((file_name1, file_name2, functions1, functions2))
 
-            for pair in file_pairs:
-                file_name1, file_name2 = pair
-                nodes_diff = abs(file_node_counts[os.path.basename(file_name1)] - file_node_counts[os.path.basename(file_name2)])
-
-                if nodes_diff > nearest_factor_of_10:
-                    excluded_pairs.append(pair)
-                else:
-                    similarity, functions1, functions2 = calculate_similarity(file_name1, file_name2)
-                    similarities.append((pair, similarity))
-                    if functions1 and functions2 and 0.3 <= similarity < 0.8:
-                        similar_pairs.append((file_name1, file_name2, functions1, functions2))
-
-            main_table = PrettyTable()
-
-            if all_directories :
-                main_table.field_names = ["Dir 1", "Dir 2", "Percentage Similarity", "Conclusion", "HTML Diff Link"]
-            else:
-                main_table.field_names = ["File 1", "File 2", "Percentage Similarity", "Conclusion", "HTML Diff Link"]
-
-            similarities = [(pair, similarity * 100) for pair, similarity in similarities if pair not in excluded_pairs]
-            similarities.sort(key=lambda x: (-x[1], x[0]))
-
-            for pair, similarity in similarities:
-                file_name1, file_name2 = pair
-                conclusion = get_conclusion(similarity / 100)
-
-                if similarity < 0:
-                    similarity_entry = f"{abs(similarity):.2f}%(*)"
-                else:
-                    similarity_entry = f"{similarity:.2f}%"
+                main_table = PrettyTable()
 
                 if all_directories:
-                    output_html_file = f"{os.path.basename(os.path.dirname(file_name1))}_vs_{os.path.basename(os.path.dirname(file_name2))}.html"
+                    main_table.field_names = ["Dir 1", "Dir 2", "Percentage Similarity", "Conclusion", "HTML Diff Link"]
                 else:
-                    output_html_file = f"{os.path.basename(file_name1)}_vs_{os.path.basename(file_name2)}.html"
-                subprocess.run(['gumtree', 'htmldiff', file_name1, file_name2, '-o', output_html_file])
+                    main_table.field_names = ["File 1", "File 2", "Percentage Similarity", "Conclusion",
+                                              "HTML Diff Link"]
 
-                # Adjust the HTML link generation to use the absolute file path
-                html_link = f"file://wsl.localhost/Ubuntu{os.path.abspath(output_html_file)}"
+                similarities = [(pair, similarity * 100) for pair, similarity in similarities if
+                                pair not in excluded_pairs]
+                similarities.sort(key=lambda x: (-x[1], x[0]))
 
-                if all_directories:
-                    main_table.add_row([os.path.basename(os.path.dirname(file_name1)), os.path.basename(os.path.dirname(file_name2)), similarity_entry, conclusion, html_link])
-                else:
-                    main_table.add_row([file_name1, file_name2, similarity_entry, conclusion, html_link])
+                for pair, similarity in similarities:
+                    file_name1, file_name2 = pair
+                    conclusion = get_conclusion(similarity / 100)
 
-            for pair in excluded_pairs:
-                file_name1, file_name2 = pair
-                html_link = generate_html_diff_link(file_name1, file_name2)
-                main_table.add_row([file_name1, file_name2, "--", "No matches were found in your submission.", html_link])
+                    if similarity < 0:
+                        similarity_entry = f"{abs(similarity):.2f}%(*)"
+                    else:
+                        similarity_entry = f"{similarity:.2f}%"
 
-            print(main_table)
+                    if all_directories:
+                        output_html_file = f"{os.path.basename(os.path.dirname(file_name1))}_vs_{os.path.basename(os.path.dirname(file_name2))}.html"
+                    else:
+                        output_html_file = f"{os.path.basename(file_name1)}_vs_{os.path.basename(file_name2)}.html"
+                    subprocess.run(['gumtree', 'htmldiff', file_name1, file_name2, '-o', output_html_file])
 
-            for file_name1, file_name2, functions1, functions2 in similar_pairs:
-                print(f"\n* Function comparison for {file_name1} and {file_name2}:")
-                print(f"\nTotal number of functions in {file_name1}: {len(functions1)}")
-                print("Function names:")
-                for func in sorted(functions1):
-                    print(func)
+                    # Adjust the HTML link generation to use the absolute file path
+                    html_link = f"file://wsl.localhost/Ubuntu{os.path.abspath(output_html_file)}"
 
-                print(f"\nTotal number of functions in {file_name2}: {len(functions2)}")
-                print("Function names:")
-                for func in sorted(functions2):
-                    print(func)
+                    if all_directories:
+                        main_table.add_row([os.path.basename(os.path.dirname(file_name1)),
+                                            os.path.basename(os.path.dirname(file_name2)), similarity_entry, conclusion,
+                                            html_link])
+                    else:
+                        main_table.add_row([file_name1, file_name2, similarity_entry, conclusion, html_link])
 
-                func_table = PrettyTable()
-                func_table.field_names = [file_name1, file_name2, "Percentage Similarity"]
+                for pair in excluded_pairs:
+                    file_name1, file_name2 = pair
+                    html_link = generate_html_diff_link(file_name1, file_name2)
+                    main_table.add_row(
+                        [file_name1, file_name2, "--", "No matches were found in your submission.", html_link])
 
-                func_similarity_list = []
-                for func1, func2 in itertools.product(functions1, functions2):
-                    func_similarity = compare_functions(file_name1, func1, file_name2, func2)
-                    func_similarity_list.append((func1, func2, f"{func_similarity * 100:.2f}%"))
+                print(main_table)
 
-                func_similarity_list.sort(key=lambda x: float(x[2].rstrip('%')), reverse=True)
+                for file_name1, file_name2, functions1, functions2 in similar_pairs:
+                    print(f"\n* Function comparison for {file_name1} and {file_name2}:")
+                    print(f"\nTotal number of functions in {file_name1}: {len(functions1)}")
+                    print("Function names:")
+                    for func in sorted(functions1):
+                        print(func)
 
-                for func1, func2, func_similarity in func_similarity_list:
-                    func_table.add_row([func1, func2, func_similarity])
+                    print(f"\nTotal number of functions in {file_name2}: {len(functions2)}")
+                    print("Function names:")
+                    for func in sorted(functions2):
+                        print(func)
 
-                print(func_table)
+                    func_table = PrettyTable()
+                    func_table.field_names = [file_name1, file_name2, "Percentage Similarity"]
 
-            end_time = time.time()
-            execution_time = end_time - start_time
-            print("\nExecution time:", execution_time, "seconds.")
+                    func_similarity_list = []
+                    for func1, func2 in itertools.product(functions1, functions2):
+                        func_similarity = compare_functions(file_name1, func1, file_name2, func2)
+                        func_similarity_list.append((func1, func2, f"{func_similarity * 100:.2f}%"))
+
+                    func_similarity_list.sort(key=lambda x: float(x[2].rstrip('%')), reverse=True)
+
+                    for func1, func2, func_similarity in func_similarity_list:
+                        func_table.add_row([func1, func2, func_similarity])
+
+                    print(func_table)
+
+                end_time = time.time()
+                execution_time = end_time - start_time
+                print("\nExecution time:", execution_time, "seconds.")
+
+    except Exception as e:
+        print("Oops! An error occurred:", e)
+        return
 
 if __name__ == "__main__":
     main()
