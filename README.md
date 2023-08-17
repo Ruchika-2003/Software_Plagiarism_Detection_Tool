@@ -37,7 +37,7 @@ The tool enhances its analysis by visually presenting the differences between co
     - Employ the Gumtree Diff Tool for visual discrepancies.
     - Generate comprehensive reports with similarity scores and plagiarism verdicts.
 
-
+#
 ## Requirements
 
 Presence of gumtree diff tool ready for use
