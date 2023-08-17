@@ -38,6 +38,10 @@ The tool enhances its analysis by visually presenting the differences between co
     - Generate comprehensive reports with similarity scores and plagiarism verdicts.
 
 
+## Requirements
+
+Presence of gumtree diff tool ready for use
+
 
 ## Run Locally
 Go to the project directory which contains the required files or directories which are supposed to be tested with the tool
