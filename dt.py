@@ -6,6 +6,7 @@ from prettytable import PrettyTable
 import os
 import subprocess
 import time
+import sys
 
 # Memoization cache for storing previously calculated ASTs and similarities
 ast_cache = {}
@@ -241,7 +242,6 @@ def main():
 
     try :
         file_names = []
-        import sys
 
         if len(sys.argv) > 1:
             input_names = sys.argv[1:]
