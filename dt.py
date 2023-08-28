@@ -162,7 +162,7 @@ def combine_cpp_files(directory_name):
             else:
                 # Combining function definitions from .cpp files without #include statements
                 code = remove_include_directives(code)
-                function_definitions += code + "\n\n"
+                function_definitions += f"// Code from {file}\n" + code + "\n\n"
 
     # Generating include statements block
     include_block = "\n".join(include_statements)
