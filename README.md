@@ -46,6 +46,13 @@ Presence of gumtree diff tool ready for use
 
 
 ## Run Locally
+For installing the project dependancies make use of the following command
+
+```bash
+  pip install requirements.txt
+```
+
+
 Go to the project directory which contains the required files or directories which are supposed to be tested with the tool
 
 ```bash
