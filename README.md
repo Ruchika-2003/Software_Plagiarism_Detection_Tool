@@ -77,7 +77,7 @@ Run the code with below command
   spdt dt.py file_names/directory_names
 ```
 
-For visually comparison - If gumtree is not already present refer this for installation
+For visual comparison - If gumtree is not already present refer this for installation
 
 [https://github.com/GumTreeDiff/gumtree/wiki/Getting-Started](url)
 
