@@ -163,7 +163,7 @@ def generate_html_diff_link(file_name1, file_name2):
     return f"file://wsl.localhost/Ubuntu/root/{output_html}"
 
 
-def combine_cpp_files(directory_name):
+def combine_files(directory_name):
     directory = os.path.join(os.getcwd(), directory_name)
     new_file_path = os.path.join(directory, "fin_ent.cpp")
 
@@ -304,7 +304,7 @@ def main():
             if all_directories:
                 for name in input_names:
                     # Creating fin_ent.cpp if not present
-                    new_file_path = combine_cpp_files(name)
+                    new_file_path = combine_files(name)
                     if new_file_path:
                         print(f"Processing directory: {name}")
                         file_names.append(new_file_path)
