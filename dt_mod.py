@@ -163,6 +163,8 @@ def generate_html_diff_link(file_name1, file_name2):
     return f"file://wsl.localhost/Ubuntu/root/{output_html}"
 
 
+import os
+
 def combine_files(directory_name):
     directory = os.path.join(os.getcwd(), directory_name)
     new_file_path = os.path.join(directory, "fin_ent.cpp")
@@ -192,12 +194,12 @@ def combine_files(directory_name):
                 # Removing the preprocessing directives from header files
                 code = remove_preprocessing_directives(code)
 
-                # Combining header files content
-                header_contents += code + "\n\n"
+                # Combining header files content with file comment
+                header_contents += f"\n// From : {file}\n" + code + "\n\n"
             else:
-                # Combining function definitions from .cpp files without #include statements
+                # Combining function definitions from .cpp files without #include statements with file comment
                 code = remove_include_directives(code)
-                function_definitions += code + "\n\n"
+                function_definitions += f"\n// From : {file}\n" + code + "\n\n"
 
     # Generating include statements block
     include_block = "\n".join(include_statements)
@@ -208,7 +210,9 @@ def combine_files(directory_name):
     # Writing the combined code to the file "fin_ent.cpp"
     with open(new_file_path, "w") as f:
         f.write(final_code)
+
     return new_file_path
+
 
 def get_include_statements(code):
     lines = code.split("\n")
